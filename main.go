@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/Romi666/gpt3-discord-bot/completion"
 	"github.com/Romi666/gpt3-discord-bot/connection"
+	discord_gpt "github.com/Romi666/gpt3-discord-bot/discord-gpt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 	"log"
@@ -19,15 +21,19 @@ func init() {
 	}
 }
 func main() {
+	clientGpt := connection.InitConnectionGPT()
 	dg, err := connection.InitConnectionDiscord()
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
 
-	dg.AddHandler(messageCreate)
-
 	dg.Identify.Intents = discordgo.IntentsGuildMessages
+
+	comp := completion.NewCompletion(clientGpt)
+	dgpt := discord_gpt.NewDiscordGPT(comp)
+
+	dg.AddHandler(dgpt.CreateCompletion)
 
 	err = dg.Open()
 	if err != nil {
@@ -41,24 +47,4 @@ func main() {
 	<-sc
 
 	dg.Close()
-}
-
-// This function will be called (due to AddHandler above) every time a new
-// message is created on any channel that the authenticated bot has access to.
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-
-	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
-
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
-	}
 }

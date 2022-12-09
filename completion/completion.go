@@ -6,23 +6,22 @@ import (
 )
 
 type Completion struct {
-	Prompt string
+	Client *gogpt.Client
 }
 
-func NewCompletion(prompt string) Completion {
+func NewCompletion(client *gogpt.Client) Completion {
 	return Completion{
-		Prompt: prompt,
+		Client: client,
 	}
 }
 
-
-func (c *Completion) SendCompletionsRequest(ctx context.Context, client *gogpt.Client) (response gogpt.CompletionResponse, err error) {
+func (c *Completion) SendCompletionsRequest(ctx context.Context, prompt string) (response gogpt.CompletionResponse, err error) {
 	req := gogpt.CompletionRequest{
-		Model: "text-davinci-003",
+		Model:     "text-davinci-003",
 		MaxTokens: 2048,
-		Prompt:    c.Prompt,
+		Prompt:    prompt,
 	}
-	response, err = client.CreateCompletion(ctx, req)
+	response, err = c.Client.CreateCompletion(ctx, req)
 	if err != nil {
 		return gogpt.CompletionResponse{}, err
 	}

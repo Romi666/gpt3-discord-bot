@@ -40,7 +40,8 @@ func (d *DiscordGPT) CreateCompletion(s *discordgo.Session, m *discordgo.Message
 			s.ChannelMessageSend(m.ChannelID, "error generate answer, try again")
 			return
 		}
+		s.ChannelTyping(m.ChannelID)
 
-		s.ChannelMessageSend(m.ChannelID, resp.Choices[0].Text)
+		s.ChannelMessageSendReply(m.ChannelID, resp.Choices[0].Text, &discordgo.MessageReference{MessageID: m.Message.ID})
 	}
 }
